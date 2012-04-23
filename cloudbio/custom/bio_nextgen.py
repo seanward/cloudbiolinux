@@ -207,9 +207,9 @@ def install_varianttools(env):
 
 @_if_not_installed("pseq")
 def install_plink_seq(env):
-    version = "0.07"
+    version = "0.08"
     url = "http://atgu.mgh.harvard.edu/plinkseq/dist/" \
-          "plinkseq-{0}-x86_64.tar.gz".format(version)
+          "version-{ver}/plinkseq-{ver}-x86_64.tar.gz".format(ver=version)
     def _plink_copy(env):
         for x in ["pseq"]:
             env.safe_sudo("cp {0} {1}/bin".format(x, env.system_install))

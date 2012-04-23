@@ -17,6 +17,7 @@ Requires:
 """
 import os
 import sys
+import time
 from datetime import datetime
 
 from fabric.main import load_settings
@@ -337,7 +338,12 @@ def _python_library_installer(config):
     version_ext = "-%s" % env.python_version_ext if env.python_version_ext else ""
     env.safe_sudo("easy_install%s -U pip" % version_ext)
     for pname in env.flavor.rewrite_config_items("python", config['pypi']):
-        env.safe_sudo("easy_install%s -U %s" % (version_ext, pname))
+    	with settings(warn_only=True):    
+		result = env.safe_sudo("easy_install%s -U %s" % (version_ext, pname))
+	# hack to deal with mirror throttling
+	if result.failed:
+		time.sleep(300)
+		env.safe_sudo("easy_install%s -U %s" % (version_ext, pname))
         # Use pip when it doesn't re-download even if latest package installed
         # https://bitbucket.org/ianb/pip/issue/13/upgrade-always-downloads-most-recent
         #sudo("pip%s install -U %s" % (version_ext,  pname))
@@ -375,7 +381,12 @@ def _perl_library_installer(config):
         # Need to hack stdin because of some problem with cpanminus script that
         # causes fabric to hang
         # http://agiletesting.blogspot.com/2010/03/getting-past-hung-remote-processes-in.html
-        run("cpanm %s --skip-installed --notest %s < /dev/null" % (sudo_str, lib))
+        with settings(warn_only=True):
+		result = run("cpanm %s --skip-installed --notest %s < /dev/null" % (sudo_str, lib))
+		# if cpanm is throttling, wait 2 minutes and try again
+	if result.failed:
+		time.sleep(180)
+		run("cpanm %s --skip-installed --notest %s < /dev/null" % (sudo_str, lib))
 
 def _clojure_library_installer(config):
     """Install clojure libraries using cljr.

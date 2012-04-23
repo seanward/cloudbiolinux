@@ -122,6 +122,7 @@ programming:
     - stow
     - rsync
     - python-software-properties
+    - protobuf-compiler
   filesystem:
     - libfuse-dev
     - fuse-utils
